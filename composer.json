@@ -1,0 +1,32 @@
+{
+    "name": "memberpoint/wos-users-bundle",
+    "type": "symfony-bundle",
+    "authors": [
+        {
+            "name": "Guilherme Cunha Eloi",
+            "email": "gcunhaeloi@gmail.com"
+        },
+        {
+            "name": "Nic Berces",
+            "email": "nberces@savagebull.com.au"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url":  "git@bitbucket.org:dblsolutions/wos-common-bundle.git"
+        }
+    ],
+    "require": {
+        "memberpoint/wos-common-bundle": "dev-master"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": { "MemberPoint\\WOS\\UsersBundle\\": "" },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    }
+}

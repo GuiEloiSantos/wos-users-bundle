@@ -1,4 +1,4 @@
-CommonBundle
+UsersBundle
 ==
 
 The MemberPoint Whole-Of-Sports (WOS) **UsersBundle** provides functionality

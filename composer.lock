@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b3acdfd1fa559b4a7ed68b26198010d9",
+    "content-hash": "b67780cfaf66fc753bdb6169cbd19f79",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -938,79 +938,6 @@
                 "simple-cache"
             ],
             "time": "2017-01-02T13:31:39+00:00"
-        },
-        {
-            "name": "symfony/annotations-pack",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/annotations-pack.git",
-                "reference": "18c762ffefaede85efa911e840ab2eb0e33993b5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/annotations-pack/zipball/18c762ffefaede85efa911e840ab2eb0e33993b5",
-                "reference": "18c762ffefaede85efa911e840ab2eb0e33993b5",
-                "shasum": ""
-            },
-            "require": {
-                "doctrine/annotations": "^1.4",
-                "doctrine/cache": "^1.6",
-                "php": "^7.0"
-            },
-            "type": "metapackage",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A pack for the Doctrine annotations with cache",
-            "time": "2017-06-14T23:37:05+00:00"
-        },
-        {
-            "name": "symfony/flex",
-            "version": "v1.0.62",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/flex.git",
-                "reference": "c233143ef550f6acbe033fe63d15dad15ca8566a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/flex/zipball/c233143ef550f6acbe033fe63d15dad15ca8566a",
-                "reference": "c233143ef550f6acbe033fe63d15dad15ca8566a",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^1.1",
-                "php": "^7.0"
-            },
-            "require-dev": {
-                "composer/composer": "^1.4",
-                "symfony/phpunit-bridge": "^3.2.8"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0-dev"
-                },
-                "class": "Symfony\\Flex\\Flex"
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Flex\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien.potencier@gmail.com"
-                }
-            ],
-            "time": "2018-01-17T07:28:24+00:00"
         },
         {
             "name": "symfony/polyfill-intl-icu",

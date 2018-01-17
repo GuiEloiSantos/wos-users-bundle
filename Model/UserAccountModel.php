@@ -16,9 +16,8 @@ class UserAccountModel implements \JsonSerializable
     protected $userEntity;
     protected $validator;
 
-    public function __construct(UserAccountsRepository $usersRepository, UserAccount $userEntity )
+    public function __construct( UserAccount $userEntity )
     {
-        $this->usersRepository = $usersRepository;
         $this->userEntity = $userEntity;
     }
 
@@ -52,8 +51,8 @@ class UserAccountModel implements \JsonSerializable
             )
         );
         if ($passwordValidator->validatePassword($password)) {
-           // $this->userEntity->password = Password::encrypt($password);
-           // $this->hasUnsavedChanges = true;
+           $this->userEntity->password = Password::encrypt($password);
+           $this->hasUnsavedChanges = true;
             return true;
         } else {
             //@TODO Trow exception

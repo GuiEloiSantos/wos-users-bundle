@@ -20,9 +20,7 @@
         }
     ],
     "require": {
-        "memberpoint/wos-common-bundle": "dev-master",
-        "doctrine/orm": "^2.6",
-        "symfony/symfony": "^4.0"
+        "memberpoint/wos-common-bundle": "dev-master"
     },
     "require-dev": {},
     "autoload": {

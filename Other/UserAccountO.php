@@ -16,10 +16,6 @@ class UserAccountO implements \JsonSerializable
     protected $userEntity;
     protected $validator;
 
-    public function __construct( UserAccount $userEntity )
-    {
-        $this->userEntity = $userEntity;
-    }
 
     public static function configureDependencies(OptionsResolver $resolver)
     {
@@ -39,7 +35,7 @@ class UserAccountO implements \JsonSerializable
         $resolver->setRequired('validator');
     }
 
-    public function setPassword($password)
+    public static function setPassword($password)
     {
         $passwordValidator = new Password(
             array(
@@ -51,8 +47,8 @@ class UserAccountO implements \JsonSerializable
             )
         );
         if ($passwordValidator->validatePassword($password)) {
-           $this->userEntity->password = Password::encrypt($password);
-           $this->hasUnsavedChanges = true;
+           //$this->userEntity->password = Password::encrypt($password);
+           //$this->hasUnsavedChanges = true;
             return true;
         } else {
             //@TODO Trow exception

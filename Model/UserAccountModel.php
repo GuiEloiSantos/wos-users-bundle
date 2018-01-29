@@ -3,7 +3,7 @@
 namespace Memberpoint\WOS\UsersBundle\Model;
 
 use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
-use MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountsRepository;
+use MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository;
 use MemberPoint\WOS\UsersBundle\Utils\Password;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 

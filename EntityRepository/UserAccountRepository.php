@@ -7,7 +7,7 @@ use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class UserAccountsRepository extends EntityRepository
+class UserAccountRepository extends EntityRepository
 {
 
     public static function configureFindUsersOptions(OptionsResolver $resolver)

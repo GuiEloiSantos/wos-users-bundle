@@ -3,10 +3,9 @@
 namespace MemberPoint\WOS\UsersBundle\Model;
 
 use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
-use MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository;
 use MemberPoint\WOS\UsersBundle\Utils\Password;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
+use Doctrine\ORM\EntityManager;
 
 class UserAccountModel implements \JsonSerializable
 {
@@ -15,10 +14,12 @@ class UserAccountModel implements \JsonSerializable
     protected $usersRepository;
     protected $userEntity;
     protected $validator;
+    protected $em;
 
-    public function __construct( UserAccount $userEntity )
+    public function __construct( UserAccount $userEntity , EntityManager $em)
     {
         $this->userEntity = $userEntity;
+        $this->em = $em;
     }
 
     public static function configureDependencies(OptionsResolver $resolver)
@@ -174,5 +175,9 @@ class UserAccountModel implements \JsonSerializable
     public function getCountLoginAttemptFailed()
     {
         return $this->userEntity->countLoginAttemptFailed;
+    }
+
+    public function save(){
+        $this->em->persist($this->userEntity);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Memberpoint\WOS\UsersBundle\Model;
+namespace MemberPoint\WOS\UsersBundle\Model;
 
 use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
 use MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository;

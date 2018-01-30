@@ -6,9 +6,16 @@ use Doctrine\ORM\EntityRepository;
 use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class UserAccountRepository extends EntityRepository
+class UserAccountRepository extends ServiceEntityRepository
 {
+
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, UserAccount::class);
+    }
 
     public static function configureFindUsersOptions(OptionsResolver $resolver)
     {

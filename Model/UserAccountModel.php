@@ -11,7 +11,6 @@ class UserAccountModel implements \JsonSerializable
 {
     public $hasUnsavedChanges;
 
-    protected $usersRepository;
     protected $userEntity;
     protected $validator;
     protected $em;

@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass="MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountsRepository")
+ * @ORM\Entity(repositoryClass="MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository")
  * @ORM\Table(name="wos_users__user_account")
  */
 class UserAccount
@@ -104,7 +104,7 @@ class UserAccount
     public $lastLoginAttemptDttm;
 
     /**
-     * @ORM\Column(type="integer", name="last_login_attempt", nullable=false)
+     * @ORM\Column(type="integer", name="count_login_attempt_failed", nullable=false)
      * @Assert\NotBlank()
      */
     public $countLoginAttemptFailed = 0;

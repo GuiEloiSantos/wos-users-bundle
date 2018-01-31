@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass="MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository")
  * @ORM\Table(name="wos_users__user_account")
+ * @ORM\HasLifecycleCallbacks
  */
 class UserAccount
 {
@@ -37,7 +38,7 @@ class UserAccount
     public $emailAddress;
 
     /**
-     * @ORM\Column(type="string", name="password", length=320, nullable=false)
+     * @ORM\Column(type="string", name="password", length=320, nullable=false, unique=true)
      * @Assert\NotBlank()
      */
     public $password;
@@ -70,12 +71,11 @@ class UserAccount
     public $createdDttm;
 
     /**
-     * @ORM\ManyToOne(targetEntity="emberPoint\WOS\UsersBundle\Entity\UserAccountEntity")
+     * @ORM\ManyToOne(targetEntity="MemberPoint\WOS\UsersBundle\Entity\UserAccountEntity")
      * @ORM\Column(type="string", name="last_modified_by_user_account")
      * @ORM\JoinColumn(name="last_modified_by_user_account", referencedColumnName="id")
      */
     public $lastModifiedByUserAccount;
-
 
     /**
      * @ORM\Column(type="string", name="last_modified_by_user_handle", length=64)
@@ -88,8 +88,7 @@ class UserAccount
     public $lastModifiedDttm;
 
     /**
-     * @ORM\Column(type="boolean", name="is_verified",  nullable=false)
-     * @Assert\NotBlank()
+     * @ORM\Column(type="boolean", name="is_verified")
      */
     public $accountVerified = false;
 
@@ -109,5 +108,13 @@ class UserAccount
      */
     public $countLoginAttemptFailed = 0;
 
+    /**
+     *  @ORM\PrePersist
+     */
+    public function prePersist()
+    {
+        $this->createdDttm = $this->createdDttm?$this->createdDttm:date('Y-m-d H:i:s');
+        $this->lastModifiedDttm =$this->lastModifiedDttm?$this->lastModifiedDttm:date('Y-m-d H:i:s');
 
+    }
 }

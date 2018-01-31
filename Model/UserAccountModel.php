@@ -5,38 +5,58 @@ namespace MemberPoint\WOS\UsersBundle\Model;
 use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
 use MemberPoint\WOS\UsersBundle\Utils\Password;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Doctrine\ORM\EntityManager;
 
 class UserAccountModel implements \JsonSerializable
 {
-    public $hasUnsavedChanges;
+    protected $hasUnsavedChanges;
+    protected $isNewAccount = true;
+    protected $userAccountEntity;
+    protected $userAccountRepository;
+    protected $isAuthenticated = false;
 
-    protected $userEntity;
-    protected $validator;
-    protected $em;
-
-    public function __construct( UserAccount $userEntity , EntityManager $em)
+    public function __construct($emailAddress = null, array $deps = array())
     {
-        $this->userEntity = $userEntity;
-        $this->em = $em;
+        $resolver = new OptionsResolver();
+        static::configureDependencies($resolver);
+        $deps = $resolver->resolve($deps);
+        $this->hasUnsavedChanges = false;
+        $this->userAccountRepository = $deps['userAccountRepository'];
+
+        if ($deps['userAccountEntity'])
+            $this->userAccountEntity = $deps['userAccountEntity'];
+        else {
+            $this->userAccountEntity = $this->userAccountRepository->findOneByEmailAddress($emailAddress);
+            if (!$this->userAccountEntity) {
+                $this->userAccountEntity = new UserAccount();
+                $this->setEmailAddress($emailAddress);
+            }
+        }
+        $this->isNewAccount = $this->userAccountRepository->containsUser($this->userAccountEntity) ? true : false;
     }
 
     public static function configureDependencies(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             array(
-                'userAccountsRepository' => null,
-                'userAccountEntity' => null,
-                'validator' => null
+                'userAccountRepository' => null,
+                'userAccountEntity' => null
             )
         );
 
-        $resolver->setAllowedTypes('usersRepository', 'SavageBull\BA\UsersBundle\EntityRepository\UserAccountsRepository');
-        $resolver->setAllowedTypes('userEntity', array('null', 'SavageBull\BA\UsersBundle\Entity\UserAccountEntity'));
-        $resolver->setAllowedTypes('validator', 'Symfony\Component\Validator\Validator\ValidatorInterface');
+        $resolver->setAllowedTypes('userAccountEntity', array(null, 'MemberPoint\WOS\UsersBundle\Entity\UserAccountEntity'));
+        $resolver->setAllowedTypes('userAccountRepository', 'MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository');
 
-        $resolver->setRequired('usersRepository');
-        $resolver->setRequired('validator');
+
+        $resolver->setRequired('userAccountRepository');
+
+    }
+
+    public function setEmailAddress($emailAddress)
+    {
+        if (filter_var($emailAddress, FILTER_VALIDATE_EMAIL) && $this->isNewAccount) {
+            $this->userAccountEntity->emailAddress = $emailAddress;
+        }
+        //@TODO Throw exception invalid email
     }
 
     public function setPassword($password)
@@ -51,13 +71,63 @@ class UserAccountModel implements \JsonSerializable
             )
         );
         if ($passwordValidator->validatePassword($password)) {
-           $this->userEntity->password = Password::encrypt($password);
-           $this->hasUnsavedChanges = true;
+            $this->userAccountEntity->password = Password::encrypt($password);
+            $this->hasUnsavedChanges = true;
             return true;
         } else {
             //@TODO Trow exception
             return false;
         }
+    }
+
+    public function setFirstName($firstName)
+    {
+        $this->userAccountEntity->firstName = $firstName;
+    }
+
+    public function setLastName($lastName)
+    {
+        $this->userAccountEntity = $lastName;
+    }
+
+    public function setNationalId($nationalId)
+    {
+        $this->userAccountEntity->nationalId = $nationalId;
+    }
+
+    public function setMobilePhoneNumber($mobilePhoneNumber)
+    {
+        $this->userAccountEntity->mobilePhoneNumber = $mobilePhoneNumber;
+    }
+
+    public function setCreatedDttm($createdDttm)
+    {
+        $this->userAccountEntity->createdDttm = $createdDttm;
+    }
+
+    public function setLastModifiedByUserHandle($lastModifiedByUserHandle)
+    {
+        $this->userAccountEntity->lastModifiedByUserHandle = $lastModifiedByUserHandle;
+    }
+
+    public function setLastModifiedDttm($lastModifiedDttm)
+    {
+        $this->userAccountEntity->lastModifiedDttm = $lastModifiedDttm;
+    }
+
+    public function setTokenExpireDttm($tokenExpireDttm)
+    {
+        $this->userAccountEntity->tokenExpireDttm = $tokenExpireDttm;
+    }
+
+    public function setLastLoginAttemptDttm($lastLoginAttemptDttm)
+    {
+        $this->userAccountEntity->lastLoginAttemptDttm = $lastLoginAttemptDttm;
+    }
+
+    public function setCountLoginAttemptFailed($countLoginAttemptFailed)
+    {
+        $this->userAccountEntity->countLoginAttemptFailed = $countLoginAttemptFailed;
     }
 
     /**
@@ -93,90 +163,129 @@ class UserAccountModel implements \JsonSerializable
 
     public function getId()
     {
-        return $this->userEntity->id;
+        return $this->userAccountEntity->id;
     }
 
     public function getFirstName()
     {
-        return $this->userEntity->firstName;
+        return $this->userAccountEntity->firstName;
     }
 
     public function getLastName()
     {
-        return $this->userEntity->lastName;
+        return $this->userAccountEntity->lastName;
     }
 
     public function getEmailAddress()
     {
-        return $this->userEntity->emailAddress;
+        return $this->userAccountEntity->emailAddress;
     }
 
     public function getPassword()
     {
-        return $this->userEntity->password;
+        return $this->userAccountEntity->password;
     }
 
     public function getNationalId()
     {
-        return $this->userEntity->nationalId;
+        return $this->userAccountEntity->nationalId;
     }
 
     public function getMobilePhoneNumber()
     {
-        return $this->userEntity->mobilePhoneNumber;
+        return $this->userAccountEntity->mobilePhoneNumber;
     }
 
     public function getCreatedByUserHandle()
     {
-        return $this->userEntity->createdByUserHandle;
+        return $this->userAccountEntity->createdByUserHandle;
     }
 
     public function getCreatedByUserAccount()
     {
-        return $this->userEntity->createdByUserAccount;
+        return $this->userAccountEntity->createdByUserAccount;
     }
 
     public function getCreatedDttm()
     {
-        return $this->userEntity->createdDttm;
+        return $this->userAccountEntity->createdDttm;
     }
 
     public function getLastModifiedByUserHandle()
     {
-        return $this->userEntity->lastModifiedByUserHandle;
+        return $this->userAccountEntity->lastModifiedByUserHandle;
     }
 
     public function getLastModifiedByUserAccount()
     {
-        return $this->userEntity->lastModifiedByUserAccount;
+        return $this->userAccountEntity->lastModifiedByUserAccount;
     }
 
     public function getLastModifiedDttm()
     {
-        return $this->userEntity->lastModifiedDttm;
+        return $this->userAccountEntity->lastModifiedDttm;
     }
 
     public function getAccountVerified()
     {
-        return $this->userEntity->accountVerified;
+        return $this->userAccountEntity->accountVerified;
     }
 
     public function getTokenExpireDttm()
     {
-        return $this->userEntity->tokenExpireDttm;
+        return $this->userAccountEntity->tokenExpireDttm;
     }
 
     public function getLastLoginAttemptDttm()
     {
-        return $this->userEntity->lastLoginAttemptDttm;
+        return $this->userAccountEntity->lastLoginAttemptDttm;
     }
 
     public function getCountLoginAttemptFailed()
     {
-        return $this->userEntity->countLoginAttemptFailed;
+        return $this->userAccountEntity->countLoginAttemptFailed;
     }
 
-    public function save(){
-        $this->em->persist($this->userEntity);
+    public function save(UserAccountModel $userAccount)
+    {
+        if ($this->isNewAccount) {
+            $this->setCreatedByUserAccount($userAccount->getId() ? $userAccount->getId() : "");
+            $this->setCreatedByUserHandle($userAccount->getEmailAddress() ? $userAccount->getEmailAddress() : "");
+            $this->userAccountRepository->newUser($this->userAccountEntity);
+            $this->isNewAccount = false;
+        } else {
+            if ($userAccount->isAuthenticated) {
+                $this->setLastModifiedByUserAccount($userAccount->getId());
+                $this->setLastModifiedByUserAccount($userAccount->getEmailAddress());
+                $this->userAccountRepository->updateUser($this->userAccountEntity);
+            }
+        }
     }
+
+    public function authenticate($password){
+        $this->isAuthenticated = password_verify($password, $this->getPassword());
+    }
+
+    public function sendForgetPasswordEmail(){
+        if(!$this->isNewAccount){
+            //@TODO Send email
+        }
+    }
+
+    public function setCreatedByUserAccount($createdByUserAccount)
+    {
+        $this->userAccountEntity->createdByUserAccount = $createdByUserAccount;
+    }
+
+    public function setCreatedByUserHandle($createdByUserHandle)
+    {
+        $this->userAccountEntity->createdByUserHandle = $createdByUserHandle;
+    }
+
+    public function setLastModifiedByUserAccount($lastModifiedByUserAccount)
+    {
+        $this->userAccountEntity->lastModifiedByUserAccount = $lastModifiedByUserAccount;
+    }
+
+
 }

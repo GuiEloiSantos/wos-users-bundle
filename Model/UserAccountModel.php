@@ -34,6 +34,9 @@ class UserAccountModel implements \JsonSerializable
 
         if ($deps['userAccountEntity']) {
             $this->userAccountEntity = $deps['userAccountEntity'];
+            if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
+                throw new InvalidParameterException('No valid user supplied for the UserModel constructor');
+            }
             return;
         } else if ($deps['findById'] != NULL) {
             $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById'])?self::getUserAccountRepository()->findOneById($deps['findOneById']):new UserAccount();
@@ -48,9 +51,7 @@ class UserAccountModel implements \JsonSerializable
             }
             return;
         }
-        if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
-            throw new InvalidParameterException('No valid user supplied for the UserModel constructor');
-        }
+
     }
 
     /**

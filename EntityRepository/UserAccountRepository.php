@@ -31,14 +31,13 @@ class UserAccountRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param $registry
+     * @param UserAccountRepository $userAccountRepository
      * @return UserAccountRepository
      */
-    public static function setUserAccountRepository($registry)
+    public static function setUserAccountRepository(UserAccountRepository $userAccountRepository)
     {
         if (!(self::$userAccountRepository instanceof UserAccountRepository)){
-            if($registry)
-                self::$userAccountRepository = new UserAccountRepository($registry);
+                self::$userAccountRepository = $userAccountRepository;
         }
         if (!self::$userAccountRepository instanceof UserAccountRepository) {
             throw new InvalidRepositoryException(__CLASS__);

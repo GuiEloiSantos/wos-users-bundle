@@ -22,7 +22,6 @@ class UserAccount
 
     /**
      * @ORM\Column(type="string", name="first_name", length=80, nullable=false)
-     * @Assert\NotBlank()
      * @Assert\Length(
      *      min = 2,
      *      max = 80,
@@ -34,7 +33,6 @@ class UserAccount
 
     /**
      * @ORM\Column(type="string", name="last_name", length=80, nullable=false)
-     * @Assert\NotBlank()
      * @Assert\Length(
      *      min = 2,
      *      max = 80,

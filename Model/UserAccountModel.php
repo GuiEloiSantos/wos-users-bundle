@@ -34,19 +34,21 @@ class UserAccountModel implements \JsonSerializable
 
         if ($deps['userAccountEntity']) {
             $this->userAccountEntity = $deps['userAccountEntity'];
-            if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
+            if (!self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
                 throw new InvalidParameterException('No valid user supplied for the UserModel constructor');
             }
             return;
         } else if ($deps['findById'] != NULL) {
-            $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById'])?self::getUserAccountRepository()->findOneById($deps['findOneById']):new UserAccount();
-            if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
+            $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById']);
+            $this->userAccountEntity = $this->userAccountEntity!==null?$this->userAccountEntity:new UserAccount();
+            if (!self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
                 throw new InvalidParameterException('No valid user id provided');
             }
             return;
         } else if ($deps['findByEmailAddress'] != NULL) {
-            $this->userAccountEntity = self::getUserAccountRepository()->findOneByEmailAddress($deps['findByEmailAddress'])?self::getUserAccountRepository()->findOneByEmailAddress($deps['findByEmailAddress']):new UserAccount();
-            if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
+            $this->userAccountEntity = self::getUserAccountRepository()->findOneByEmailAddress($deps['findByEmailAddress']);
+            $this->userAccountEntity = $this->userAccountEntity!==null?$this->userAccountEntity:new UserAccount();
+            if (!self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
                 throw new ErrorMessageException('Invalid credentials');
             }
             return;
@@ -546,9 +548,11 @@ class UserAccountModel implements \JsonSerializable
      */
     public function authenticate($password)
     {
-        $this->isAuthenticated = password_verify($password, $this->getPassword());
+        $hash = $this->getPassword();
+        $this->isAuthenticated = password_verify($password, $hash );
+
         if (!$this->isAuthenticated)
-            throw new ErrorMessageException('Invalid credentials');
+            throw new ErrorMessageException(`Invalid credentials $password is not in the hash $hash  `);
         return $this;
     }
 

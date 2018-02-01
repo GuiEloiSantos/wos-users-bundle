@@ -3,6 +3,7 @@
 namespace MemberPoint\WOS\UsersBundle\Model;
 
 use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
+use MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository;
 use MemberPoint\WOS\UsersBundle\Utils\Password;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -14,7 +15,7 @@ class UserAccountModel implements \JsonSerializable
 {
     protected $hasUnsavedChanges;
     protected $userAccountEntity;
-    protected $userAccountRepository;
+
     protected $isAuthenticated = false;
 
     /**
@@ -27,17 +28,17 @@ class UserAccountModel implements \JsonSerializable
         static::configureDependencies($resolver);
         $deps = $resolver->resolve($deps);
         $this->hasUnsavedChanges = false;
-        $this->userAccountRepository = $deps['userAccountRepository'];
+        self::setUserAccountRepository($deps['userAccountRepository']);
 
         if ($deps['userAccountEntity'])
             $this->userAccountEntity = $deps['userAccountEntity'];
         else if ($deps['findOneById'] != NULL) {
-            $this->userAccountEntity = $this->userAccountRepository->findOneById($deps['findOneById']);
+            $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById']);
         } else if ($deps['findByEmailAddress'] != NULL) {
-            $this->userAccountEntity = $this->userAccountRepository->findByEmailAddress($deps['findByEmailAddress']);
+            $this->userAccountEntity = self::getUserAccountRepository()->findByEmailAddress($deps['findByEmailAddress']);
         }
         //@TODO Improve response
-        return $this->userAccountRepository->containsUser($this->userAccountEntity);
+        return self::getUserAccountRepository()->containsUser($this->userAccountEntity);
 
     }
 
@@ -60,7 +61,15 @@ class UserAccountModel implements \JsonSerializable
         $resolver->setAllowedTypes('findById', array(null, 'integer'));
         $resolver->setAllowedTypes('findByEmailAddress', array(null, 'string'));
 
-        $resolver->setRequired('userAccountRepository');
+    }
+
+    /**
+     * @param $userAccountRepository
+     * @return mixed
+     */
+    private static function setUserAccountRepository($userAccountRepository)
+    {
+        return UserAccountRepository::setUserAccountRepository($userAccountRepository);
     }
 
     /**
@@ -78,20 +87,22 @@ class UserAccountModel implements \JsonSerializable
         $userAccount = new UserAccount();
         $userAccountModel = new UserAccountModel(
             array(
-                'userAccountRepository' => $actionUserAccount->userAccountRepository,
+                'userAccountRepository' => self::getUserAccountRepository(),
                 'userAccountEntity' => $userAccount
             )
         );
         $userAccountModel->setFirstName($deps['firstName'])
             ->setLastName($deps['lastName'])
-            ->setLastName($deps['emailAddress'])
-            ->setLastName($deps['password'])
-            ->setLastName($deps['nationalId'])
-            ->setLastName($deps['mobilePhoneNumber']);
+            ->setEmailAddress($deps['emailAddress'])
+            ->setPassword($deps['password'])
+            ->setNationalId($deps['nationalId'])
+            ->setMobilePhoneNumber($deps['mobilePhoneNumber'])
+            ->setCreatedByUserAccount( $actionUserAccount?$actionUserAccount->getId():0 )
+            ->setLastModifiedByUserAccount( $actionUserAccount?$actionUserAccount->getId():0);
 
-        $userAccountModel->userAccountRepository->newUser($userAccountModel->userAccountEntity);
+        self::getUserAccountRepository()->newUser($userAccountModel->userAccountEntity);
 
-       return $userAccountModel->userAccountRepository->containsUser($userAccountModel->userAccountEntity)?$userAccountModel:false;
+        return self::getUserAccountRepository()->containsUser($userAccountModel->userAccountEntity) ? $userAccountModel : false;
     }
 
     /**
@@ -163,6 +174,14 @@ class UserAccountModel implements \JsonSerializable
         $this->userAccountEntity->firstName = $firstName;
         $this->hasUnsavedChanges = true;
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    private static function getUserAccountRepository()
+    {
+        return UserAccountRepository::getUserAccountRepository();
     }
 
     /**
@@ -440,11 +459,12 @@ class UserAccountModel implements \JsonSerializable
      */
     public function update(UserAccountModel $actionUserAccount)
     {
-        if ($actionUserAccount->isAuthenticated) {//@TODO has permission or is itself
+        if ($actionUserAccount->isAuthenticated) {
+            //@TODO has permission or is itself
             $this->setLastModifiedByUserAccount($actionUserAccount->getId());
             $this->setLastModifiedByUserAccount($actionUserAccount->getEmailAddress());
             $this->setLastModifiedDttm(new \DateTime('now'));
-            $this->userAccountRepository->updateUser($this->userAccountEntity);
+            self::getUserAccountRepository()->updateUser($this->userAccountEntity);
         }
         return $this;
     }
@@ -514,6 +534,7 @@ class UserAccountModel implements \JsonSerializable
 
     /**
      * @param $emailAddress
+     * @return  UserAccountModel
      */
     private function setEmailAddress($emailAddress)
     {
@@ -522,6 +543,7 @@ class UserAccountModel implements \JsonSerializable
             $this->hasUnsavedChanges = true;
         }
         //@TODO Throw exception invalid email
+        return $this;
     }
 
 }

@@ -56,10 +56,10 @@ class UserAccountModel implements \JsonSerializable
             )
         );
 
-        $resolver->setAllowedTypes('userAccountEntity', array(null, 'MemberPoint\WOS\UsersBundle\Entity\UserAccountEntity'));
-        $resolver->setAllowedTypes('userAccountRepository', 'MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository');
-        $resolver->setAllowedTypes('findById', array(null, 'integer'));
-        $resolver->setAllowedTypes('findByEmailAddress', array(null, 'string'));
+        $resolver->setAllowedTypes('userAccountEntity', array('MemberPoint\WOS\UsersBundle\Entity\UserAccountEntity', 'null'));
+        $resolver->setAllowedTypes('userAccountRepository', array( 'MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository', 'null'));
+        $resolver->setAllowedTypes('findById', array('integer', 'null'));
+        $resolver->setAllowedTypes('findByEmailAddress', array('string', 'null'));
 
     }
 
@@ -117,7 +117,7 @@ class UserAccountModel implements \JsonSerializable
                 'lastName' => null,
                 'emailAddress' => null,
                 'password' => null,
-                'nationalId' => null,
+                'nationalId' => '',
                 'mobilePhoneNumber' => null,
                 'actionUserAccount' => null
             )
@@ -147,10 +147,10 @@ class UserAccountModel implements \JsonSerializable
             return array_search($length, range(1, 31)) ? true : false;
         });
 
-        $resolver->setAllowedTypes('nationalId', array(null, 'string'));
-        $resolver->setAllowedTypes('mobilePhoneNumber', array(null, 'string'));
+        $resolver->setAllowedTypes('nationalId', array( 'string','null'));
+        $resolver->setAllowedTypes('mobilePhoneNumber', array('string','null'));
 
-        $resolver->setAllowedTypes('actionUserAccount', array(null, 'MemberPoint\WOS\UsersBundle\Model\UserAccountModel'));
+        $resolver->setAllowedTypes('actionUserAccount', array( 'MemberPoint\WOS\UsersBundle\Model\UserAccountModel', 'null'));
 
         $resolver->setRequired('firstName');
         $resolver->setRequired('lastName');

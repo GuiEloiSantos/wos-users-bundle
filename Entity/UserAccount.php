@@ -23,17 +23,33 @@ class UserAccount
     /**
      * @ORM\Column(type="string", name="first_name", length=80, nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 80,
+     *      minMessage = "Your last name must be at least {{ limit }} characters long",
+     *      maxMessage = "Your last name cannot be longer than {{ limit }} characters"
+     * )
      */
     public $firstName;
 
     /**
      * @ORM\Column(type="string", name="last_name", length=80, nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 80,
+     *      minMessage = "Your last name must be at least {{ limit }} characters long",
+     *      maxMessage = "Your last name cannot be longer than {{ limit }} characters"
+     * )
      */
     public $lastName;
 
     /**
      * @ORM\Column(type="string", name="email_address", length=320, nullable=true)
+     * @Assert\Email(
+     *     message = "The email '{{ value }}' is not a valid email.",
+     *     checkMX = true
+     * )
      */
     public $emailAddress;
 

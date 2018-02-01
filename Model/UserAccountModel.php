@@ -32,18 +32,25 @@ class UserAccountModel implements \JsonSerializable
         $this->hasUnsavedChanges = false;
         self::setUserAccountRepository($deps['userAccountRepository']);
 
-        if ($deps['userAccountEntity'])
+        if ($deps['userAccountEntity']) {
             $this->userAccountEntity = $deps['userAccountEntity'];
-        else if ($deps['findById'] != NULL) {
+            return;
+        } else if ($deps['findById'] != NULL) {
             $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById']);
+            if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
+                throw new InvalidParameterException('No valid user id provided');
+            }
+            return;
         } else if ($deps['findByEmailAddress'] != NULL) {
             $this->userAccountEntity = self::getUserAccountRepository()->findByEmailAddress($deps['findByEmailAddress']);
+            if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
+                throw new ErrorMessageException('Invalid credentials');
+            }
+            return;
         }
-        //@TODO Improve response
         if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
             throw new InvalidParameterException('No valid user supplied for the UserModel constructor');
         }
-
     }
 
     /**
@@ -85,66 +92,15 @@ class UserAccountModel implements \JsonSerializable
     }
 
     /**
-     * @param OptionsResolver $resolver
-     */
-     private static function configureNewUserDependencies(OptionsResolver $resolver)
-     {
-         $resolver->setDefaults(
-             array(
-                 'firstName' => null,
-                 'lastName' => null,
-                 'emailAddress' => null,
-                 'password' => null,
-                 'nationalId' => '',
-                 'mobilePhoneNumber' => null,
-                 'actionUserAccount' => null
-             )
-         );
-
-         $resolver->setAllowedTypes('firstName', array('string'));
-         /*$resolver->setAllowedValues('firstName', function ($value) {
-             $length = strlen($value);
-             return array_search($length, range(1, 79)) ? true : false;
-         });*/
-
-         $resolver->setAllowedTypes('lastName', array('string'));
-         /*$resolver->setAllowedValues('lastName', function ($value) {
-             $length = strlen($value);
-             return array_search($length, range(1, 319)) ? true : false;
-         });*/
-
-         $resolver->setAllowedTypes('emailAddress', array('string'));
-         /*$resolver->setAllowedValues('emailAddress', function ($value) {
-             $length = strlen($value);
-             return array_search($length, range(1, 319)) ? true : false;
-         });*/
-
-         $resolver->setAllowedTypes('password', array('string'));
-         /*$resolver->setAllowedValues('password', function ($value) {
-             $length = strlen($value);
-             return array_search($length, range(1, 31)) ? true : false;
-         });*/
-
-         $resolver->setAllowedTypes('nationalId', array( 'string','null'));
-         $resolver->setAllowedTypes('mobilePhoneNumber', array('string','null'));
-         $resolver->setAllowedTypes('actionUserAccount', array( 'MemberPoint\WOS\UsersBundle\Model\UserAccountModel', 'null'));
-
-         $resolver->setRequired('firstName');
-         $resolver->setRequired('lastName');
-         $resolver->setRequired('emailAddress');
-         $resolver->setRequired('password');
-     }
-
-    /**
      * @param array $deps
      * @return boolean|UserAccountModel
      */
     public static function createNewUser(array $deps = array())
     {
 
-         $resolver = new OptionsResolver();
-         static::configureNewUserDependencies($resolver);
-         $deps = $resolver->resolve($deps);
+        $resolver = new OptionsResolver();
+        static::configureNewUserDependencies($resolver);
+        $deps = $resolver->resolve($deps);
 
         $userAccountModel = new UserAccountModel(
             array(
@@ -166,6 +122,57 @@ class UserAccountModel implements \JsonSerializable
 
         $userAccountModel->isAuthenticated = true;
         return self::getUserAccountRepository()->containsUser($userAccountModel->userAccountEntity) ? $userAccountModel : false;
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+    private static function configureNewUserDependencies(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults(
+            array(
+                'firstName' => null,
+                'lastName' => null,
+                'emailAddress' => null,
+                'password' => null,
+                'nationalId' => '',
+                'mobilePhoneNumber' => null,
+                'actionUserAccount' => null
+            )
+        );
+
+        $resolver->setAllowedTypes('firstName', array('string'));
+        /*$resolver->setAllowedValues('firstName', function ($value) {
+            $length = strlen($value);
+            return array_search($length, range(1, 79)) ? true : false;
+        });*/
+
+        $resolver->setAllowedTypes('lastName', array('string'));
+        /*$resolver->setAllowedValues('lastName', function ($value) {
+            $length = strlen($value);
+            return array_search($length, range(1, 319)) ? true : false;
+        });*/
+
+        $resolver->setAllowedTypes('emailAddress', array('string'));
+        /*$resolver->setAllowedValues('emailAddress', function ($value) {
+            $length = strlen($value);
+            return array_search($length, range(1, 319)) ? true : false;
+        });*/
+
+        $resolver->setAllowedTypes('password', array('string'));
+        /*$resolver->setAllowedValues('password', function ($value) {
+            $length = strlen($value);
+            return array_search($length, range(1, 31)) ? true : false;
+        });*/
+
+        $resolver->setAllowedTypes('nationalId', array('string', 'null'));
+        $resolver->setAllowedTypes('mobilePhoneNumber', array('string', 'null'));
+        $resolver->setAllowedTypes('actionUserAccount', array('MemberPoint\WOS\UsersBundle\Model\UserAccountModel', 'null'));
+
+        $resolver->setRequired('firstName');
+        $resolver->setRequired('lastName');
+        $resolver->setRequired('emailAddress');
+        $resolver->setRequired('password');
     }
 
     /**
@@ -539,6 +546,8 @@ class UserAccountModel implements \JsonSerializable
     public function authenticate($password)
     {
         $this->isAuthenticated = password_verify($password, $this->getPassword());
+        if (!$this->isAuthenticated)
+            throw new ErrorMessageException('Invalid credentials');
         return $this;
     }
 

@@ -17,9 +17,17 @@ class UserAccountRepository extends ServiceEntityRepository
      * UserAccountRepository constructor.
      * @param RegistryInterface $registry
      */
-    private function __construct(RegistryInterface $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, UserAccount::class);
+    }
+
+    /**
+     * @return UserAccountRepository
+     */
+    public static function getUserAccountRepository()
+    {
+        return self::$userAccountRepository;
     }
 
     /**
@@ -30,19 +38,13 @@ class UserAccountRepository extends ServiceEntityRepository
     {
         if (!(self::$userAccountRepository instanceof UserAccountRepository))
             self::$userAccountRepository = new UserAccountRepository($registry);
+
+        if (!self::$userAccountRepository instanceof UserAccountRepository) {
+            throw new InvalidRepositoryException(__CLASS__);
+        }
         return self::getUserAccountRepository();
     }
 
-    /**
-     * @return UserAccountRepository
-     */
-    public static function getUserAccountRepository()
-    {
-        if(!self::$userAccountRepository instanceof UserAccountRepository){
-            throw new InvalidRepositoryException(__CLASS__);
-        }
-        return self::$userAccountRepository;
-    }
     /**
      * @param $emailAddress
      * @return null|object

@@ -32,7 +32,7 @@ class UserAccountModel implements \JsonSerializable
 
         if ($deps['userAccountEntity'])
             $this->userAccountEntity = $deps['userAccountEntity'];
-        else if ($deps['findOneById'] != NULL) {
+        else if ($deps['findById'] != NULL) {
             $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById']);
         } else if ($deps['findByEmailAddress'] != NULL) {
             $this->userAccountEntity = self::getUserAccountRepository()->findByEmailAddress($deps['findByEmailAddress']);
@@ -51,7 +51,7 @@ class UserAccountModel implements \JsonSerializable
             array(
                 'userAccountRepository' => null,
                 'userAccountEntity' => null,
-                'findOneById' => null,
+                'findById' => null,
                 'findByEmailAddress' => null
             )
         );
@@ -74,10 +74,9 @@ class UserAccountModel implements \JsonSerializable
 
     /**
      * @param array $deps
-     * @param UserAccountModel $actionUserAccount
      * @return boolean|UserAccountModel
      */
-    public static function createNewUser(array $deps = array(), UserAccountModel $actionUserAccount)
+    public static function createNewUser(array $deps = array())
     {
 
         $resolver = new OptionsResolver();
@@ -91,6 +90,7 @@ class UserAccountModel implements \JsonSerializable
                 'userAccountEntity' => $userAccount
             )
         );
+        $actionUserAccount = $deps['actionUserAccount'];
         $userAccountModel->setFirstName($deps['firstName'])
             ->setLastName($deps['lastName'])
             ->setEmailAddress($deps['emailAddress'])
@@ -102,6 +102,7 @@ class UserAccountModel implements \JsonSerializable
 
         self::getUserAccountRepository()->newUser($userAccountModel->userAccountEntity);
 
+        $userAccountModel->isAuthenticated = true;
         return self::getUserAccountRepository()->containsUser($userAccountModel->userAccountEntity) ? $userAccountModel : false;
     }
 
@@ -117,7 +118,8 @@ class UserAccountModel implements \JsonSerializable
                 'emailAddress' => null,
                 'password' => null,
                 'nationalId' => null,
-                'mobilePhoneNumber' => null
+                'mobilePhoneNumber' => null,
+                'actionUserAccount' => null
             )
         );
 
@@ -147,6 +149,8 @@ class UserAccountModel implements \JsonSerializable
 
         $resolver->setAllowedTypes('nationalId', array(null, 'string'));
         $resolver->setAllowedTypes('mobilePhoneNumber', array(null, 'string'));
+
+        $resolver->setAllowedTypes('actionUserAccount', array(null, 'MemberPoint\WOS\UsersBundle\Model\UserAccountModel'));
 
         $resolver->setRequired('firstName');
         $resolver->setRequired('lastName');
@@ -530,6 +534,13 @@ class UserAccountModel implements \JsonSerializable
     {
         //@TODO Send email
 
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAuthenticate(){
+        return $this->isAuthenticated;
     }
 
     /**

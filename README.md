@@ -27,5 +27,5 @@ Add the following repository to the application's `composer.json` file:
 Open a command console, enter the project directory, and execute:
 
 ```console
-$ composer require memberpoint/wos-users-bundle:dev-master
+$ composer require memberpoint/wos-common-bundle:dev-master memberpoint/wos-users-bundle:dev-master
 ```

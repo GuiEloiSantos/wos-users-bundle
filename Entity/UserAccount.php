@@ -113,8 +113,7 @@ class UserAccount
      */
     public function prePersist()
     {
-        $this->createdDttm = $this->createdDttm?$this->createdDttm:date('Y-m-d H:i:s');
-        $this->lastModifiedDttm =$this->lastModifiedDttm?$this->lastModifiedDttm:date('Y-m-d H:i:s');
-
+        $this->createdDttm = $this->createdDttm?$this->createdDttm: new \DateTime("now");
+        $this->lastModifiedDttm =  new \DateTime("now");
     }
 }

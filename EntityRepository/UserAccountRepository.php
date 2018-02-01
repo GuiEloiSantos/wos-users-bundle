@@ -10,17 +10,37 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 class UserAccountRepository extends ServiceEntityRepository
 {
 
+    /**
+     * UserAccountRepository constructor.
+     * @param RegistryInterface $registry
+     */
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, UserAccount::class);
     }
 
 
+    /**
+     * @param $emailAddress
+     * @return null|object
+     */
     public function findOneByEmailAddress($emailAddress)
     {
         return parent::findOneBy(['emailAddress' => $emailAddress]);
     }
 
+    /**
+     * @param $id
+     * @return null|object
+     */
+    public function findOneById($id)
+    {
+        return parent::find($id);
+    }
+
+    /**
+     * @param UserAccount $userAccount
+     */
     public function newUser(UserAccount $userAccount)
     {
         try {
@@ -41,6 +61,9 @@ class UserAccountRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param UserAccount $userAccount
+     */
     public function updateUser(UserAccount $userAccount){
         try {
             if ($this->containsUser($userAccount)){
@@ -61,6 +84,10 @@ class UserAccountRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param UserAccount $user
+     * @return bool
+     */
     public function containsUser(UserAccount $user)
     {
         return $this->_em->contains($user);

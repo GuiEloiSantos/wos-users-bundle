@@ -36,13 +36,13 @@ class UserAccountModel implements \JsonSerializable
             $this->userAccountEntity = $deps['userAccountEntity'];
             return;
         } else if ($deps['findById'] != NULL) {
-            $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById']);
+            $this->userAccountEntity = self::getUserAccountRepository()->findOneById($deps['findOneById'])?self::getUserAccountRepository()->findOneById($deps['findOneById']):new UserAccount();
             if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
                 throw new InvalidParameterException('No valid user id provided');
             }
             return;
         } else if ($deps['findByEmailAddress'] != NULL) {
-            $this->userAccountEntity = self::getUserAccountRepository()->findByEmailAddress($deps['findByEmailAddress']);
+            $this->userAccountEntity = self::getUserAccountRepository()->findOneByEmailAddress($deps['findByEmailAddress'])?self::getUserAccountRepository()->findOneByEmailAddress($deps['findByEmailAddress']):new UserAccount();
             if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
                 throw new ErrorMessageException('Invalid credentials');
             }

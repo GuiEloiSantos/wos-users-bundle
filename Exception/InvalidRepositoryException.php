@@ -15,6 +15,6 @@ class InvalidRepositoryException extends InvalidParameterException
 {
     public function __construct($message = "", $code = 0, Throwable $previous = null)
     {
-        parent::__construct(`The repository $message have never been setted, set it before of using it model/itself`, $code, $previous);
+        parent::__construct('The repository '.$message.' have never been initialized, initialize it before of using it model/itself', $code, $previous);
     }
 }

@@ -552,7 +552,7 @@ class UserAccountModel implements \JsonSerializable
         $this->isAuthenticated = password_verify($password, $hash );
 
         if (!$this->isAuthenticated)
-            throw new ErrorMessageException(`Invalid credentials $password is not in the hash $hash  `);
+            throw new ErrorMessageException('Invalid credentials');
         return $this;
     }
 

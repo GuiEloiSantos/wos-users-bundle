@@ -63,7 +63,7 @@ class UserAccount
     /**
      * @ORM\Column(type="string", name="created_by_user_handle", length=64)
      */
-    public $createdByUserHandle;
+    public $createdByUserHandle = "";
 
     /**
      * @ORM\Column(type="date", name="created_dttm")
@@ -80,7 +80,7 @@ class UserAccount
     /**
      * @ORM\Column(type="string", name="last_modified_by_user_handle", length=64)
      */
-    public $lastModifiedByUserHandle;
+    public $lastModifiedByUserHandle ="";
 
     /**
      * @ORM\Column(type="date", name="last_modified_dttm")
@@ -115,5 +115,7 @@ class UserAccount
     {
         $this->createdDttm = $this->createdDttm?$this->createdDttm: new \DateTime("now");
         $this->lastModifiedDttm =  new \DateTime("now");
+        $this->tokenExpireDttm =  new \DateTime();
+        $this->lastLoginAttemptDttm =  new \DateTime();
     }
 }

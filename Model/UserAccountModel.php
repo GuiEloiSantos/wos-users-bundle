@@ -4,6 +4,8 @@ namespace MemberPoint\WOS\UsersBundle\Model;
 
 use MemberPoint\WOS\UsersBundle\Entity\UserAccount;
 use MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository;
+use MemberPoint\WOS\UsersBundle\Exception\ErrorMessageException;
+use MemberPoint\WOS\UsersBundle\Exception\InvalidParameterException;
 use MemberPoint\WOS\UsersBundle\Utils\Password;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -38,7 +40,9 @@ class UserAccountModel implements \JsonSerializable
             $this->userAccountEntity = self::getUserAccountRepository()->findByEmailAddress($deps['findByEmailAddress']);
         }
         //@TODO Improve response
-        return self::getUserAccountRepository()->containsUser($this->userAccountEntity);
+        if (self::getUserAccountRepository()->containsUser($this->userAccountEntity)) {
+            throw new InvalidParameterException('No valid user supplied for the UserModel constructor');
+        }
 
     }
 
@@ -56,8 +60,8 @@ class UserAccountModel implements \JsonSerializable
             )
         );
 
-        $resolver->setAllowedTypes('userAccountEntity', array('MemberPoint\WOS\UsersBundle\Entity\UserAccountEntity', 'null'));
-        $resolver->setAllowedTypes('userAccountRepository', array( 'MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository', 'null'));
+        $resolver->setAllowedTypes('userAccountEntity', array('MemberPoint\WOS\UsersBundle\Entity\UserAccount', 'null'));
+        $resolver->setAllowedTypes('userAccountRepository', array('MemberPoint\WOS\UsersBundle\EntityRepository\UserAccountRepository', 'null'));
         $resolver->setAllowedTypes('findById', array('integer', 'null'));
         $resolver->setAllowedTypes('findByEmailAddress', array('string', 'null'));
 
@@ -73,21 +77,79 @@ class UserAccountModel implements \JsonSerializable
     }
 
     /**
+     * @return mixed
+     */
+    private static function getUserAccountRepository()
+    {
+        return UserAccountRepository::getUserAccountRepository();
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+     private static function configureNewUserDependencies(OptionsResolver $resolver)
+     {
+         $resolver->setDefaults(
+             array(
+                 'firstName' => null,
+                 'lastName' => null,
+                 'emailAddress' => null,
+                 'password' => null,
+                 'nationalId' => '',
+                 'mobilePhoneNumber' => null,
+                 'actionUserAccount' => null
+             )
+         );
+
+         $resolver->setAllowedTypes('firstName', array('string'));
+         /*$resolver->setAllowedValues('firstName', function ($value) {
+             $length = strlen($value);
+             return array_search($length, range(1, 79)) ? true : false;
+         });*/
+
+         $resolver->setAllowedTypes('lastName', array('string'));
+         /*$resolver->setAllowedValues('lastName', function ($value) {
+             $length = strlen($value);
+             return array_search($length, range(1, 319)) ? true : false;
+         });*/
+
+         $resolver->setAllowedTypes('emailAddress', array('string'));
+         /*$resolver->setAllowedValues('emailAddress', function ($value) {
+             $length = strlen($value);
+             return array_search($length, range(1, 319)) ? true : false;
+         });*/
+
+         $resolver->setAllowedTypes('password', array('string'));
+         /*$resolver->setAllowedValues('password', function ($value) {
+             $length = strlen($value);
+             return array_search($length, range(1, 31)) ? true : false;
+         });*/
+
+         $resolver->setAllowedTypes('nationalId', array( 'string','null'));
+         $resolver->setAllowedTypes('mobilePhoneNumber', array('string','null'));
+         $resolver->setAllowedTypes('actionUserAccount', array( 'MemberPoint\WOS\UsersBundle\Model\UserAccountModel', 'null'));
+
+         $resolver->setRequired('firstName');
+         $resolver->setRequired('lastName');
+         $resolver->setRequired('emailAddress');
+         $resolver->setRequired('password');
+     }
+
+    /**
      * @param array $deps
      * @return boolean|UserAccountModel
      */
     public static function createNewUser(array $deps = array())
     {
 
-        $resolver = new OptionsResolver();
-        static::configureNewUserDependencies($resolver);
-        $deps = $resolver->resolve($deps);
+         $resolver = new OptionsResolver();
+         static::configureNewUserDependencies($resolver);
+         $deps = $resolver->resolve($deps);
 
-        $userAccount = new UserAccount();
         $userAccountModel = new UserAccountModel(
             array(
                 'userAccountRepository' => self::getUserAccountRepository(),
-                'userAccountEntity' => $userAccount
+                'userAccountEntity' => new UserAccount()
             )
         );
         $actionUserAccount = $deps['actionUserAccount'];
@@ -97,8 +159,8 @@ class UserAccountModel implements \JsonSerializable
             ->setPassword($deps['password'])
             ->setNationalId($deps['nationalId'])
             ->setMobilePhoneNumber($deps['mobilePhoneNumber'])
-            ->setCreatedByUserAccount( $actionUserAccount?$actionUserAccount->getId():0 )
-            ->setLastModifiedByUserAccount( $actionUserAccount?$actionUserAccount->getId():0);
+            ->setCreatedByUserAccount($actionUserAccount ? $actionUserAccount->getId() : 0)
+            ->setLastModifiedByUserAccount($actionUserAccount ? $actionUserAccount->getId() : 0);
 
         self::getUserAccountRepository()->newUser($userAccountModel->userAccountEntity);
 
@@ -107,85 +169,47 @@ class UserAccountModel implements \JsonSerializable
     }
 
     /**
-     * @param OptionsResolver $resolver
-     */
-    private static function configureNewUserDependencies(OptionsResolver $resolver)
-    {
-        $resolver->setDefaults(
-            array(
-                'firstName' => null,
-                'lastName' => null,
-                'emailAddress' => null,
-                'password' => null,
-                'nationalId' => '',
-                'mobilePhoneNumber' => null,
-                'actionUserAccount' => null
-            )
-        );
-
-        $resolver->setAllowedTypes('firstName', array('string'));
-        $resolver->setAllowedValues('firstName', function ($value) {
-            $length = strlen($value);
-            return array_search($length, range(1, 79)) ? true : false;
-        });
-
-        $resolver->setAllowedTypes('lastName', array('string'));
-        $resolver->setAllowedValues('lastName', function ($value) {
-            $length = strlen($value);
-            return array_search($length, range(1, 319)) ? true : false;
-        });
-
-        $resolver->setAllowedTypes('emailAddress', array('string'));
-        $resolver->setAllowedValues('emailAddress', function ($value) {
-            $length = strlen($value);
-            return array_search($length, range(1, 319)) ? true : false;
-        });
-
-        $resolver->setAllowedTypes('password', array('string'));
-        $resolver->setAllowedValues('password', function ($value) {
-            $length = strlen($value);
-            return array_search($length, range(1, 31)) ? true : false;
-        });
-
-        $resolver->setAllowedTypes('nationalId', array( 'string','null'));
-        $resolver->setAllowedTypes('mobilePhoneNumber', array('string','null'));
-
-        $resolver->setAllowedTypes('actionUserAccount', array( 'MemberPoint\WOS\UsersBundle\Model\UserAccountModel', 'null'));
-
-        $resolver->setRequired('firstName');
-        $resolver->setRequired('lastName');
-        $resolver->setRequired('emailAddress');
-        $resolver->setRequired('password');
-    }
-
-    /**
-     * @param $lastName
+     * @param $lastModifiedByUserAccount
      * @return UserAccountModel
      */
-    public function setLastName($lastName)
+    public function setLastModifiedByUserAccount($lastModifiedByUserAccount)
     {
-        $this->userAccountEntity = $lastName;
+        $this->userAccountEntity->lastModifiedByUserAccount = $lastModifiedByUserAccount;
         $this->hasUnsavedChanges = true;
         return $this;
     }
 
     /**
-     * @param $firstName
+     * @param $createdByUserAccount
      * @return UserAccountModel
      */
-    public function setFirstName($firstName)
+    public function setCreatedByUserAccount($createdByUserAccount)
     {
-        $this->userAccountEntity->firstName = $firstName;
+        $this->userAccountEntity->createdByUserAccount = $createdByUserAccount;
         $this->hasUnsavedChanges = true;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @param $mobilePhoneNumber
+     * @return UserAccountModel
      */
-    private static function getUserAccountRepository()
+    public function setMobilePhoneNumber($mobilePhoneNumber)
     {
-        return UserAccountRepository::getUserAccountRepository();
+        $this->userAccountEntity->mobilePhoneNumber = $mobilePhoneNumber;
+        $this->hasUnsavedChanges = true;
+        return $this;
+    }
+
+    /**
+     * @param $nationalId
+     * @return UserAccountModel
+     */
+    public function setNationalId($nationalId)
+    {
+        $this->userAccountEntity->nationalId = $nationalId;
+        $this->hasUnsavedChanges = true;
+        return $this;
     }
 
     /**
@@ -208,29 +232,42 @@ class UserAccountModel implements \JsonSerializable
             $this->hasUnsavedChanges = true;
             return $this;
         } else {
-            //@TODO Trow exception
-            return false;
+            throw new ErrorMessageException(implode(' ', $passwordValidator->getErrors()));
         }
     }
 
     /**
-     * @param $nationalId
+     * @param $emailAddress
+     * @return  UserAccountModel
+     */
+    private function setEmailAddress($emailAddress)
+    {
+        if (filter_var($emailAddress, FILTER_VALIDATE_EMAIL)) {
+            $this->userAccountEntity->emailAddress = $emailAddress;
+            $this->hasUnsavedChanges = true;
+            return $this;
+        }
+        throw new ErrorMessageException('Invalid Email');
+    }
+
+    /**
+     * @param $lastName
      * @return UserAccountModel
      */
-    public function setNationalId($nationalId)
+    public function setLastName($lastName)
     {
-        $this->userAccountEntity->nationalId = $nationalId;
+        $this->userAccountEntity->lastName = $lastName;
         $this->hasUnsavedChanges = true;
         return $this;
     }
 
     /**
-     * @param $mobilePhoneNumber
+     * @param $firstName
      * @return UserAccountModel
      */
-    public function setMobilePhoneNumber($mobilePhoneNumber)
+    public function setFirstName($firstName)
     {
-        $this->userAccountEntity->mobilePhoneNumber = $mobilePhoneNumber;
+        $this->userAccountEntity->firstName = $firstName;
         $this->hasUnsavedChanges = true;
         return $this;
     }
@@ -474,34 +511,12 @@ class UserAccountModel implements \JsonSerializable
     }
 
     /**
-     * @param $lastModifiedByUserAccount
-     * @return UserAccountModel
-     */
-    public function setLastModifiedByUserAccount($lastModifiedByUserAccount)
-    {
-        $this->userAccountEntity->lastModifiedByUserAccount = $lastModifiedByUserAccount;
-        $this->hasUnsavedChanges = true;
-        return $this;
-    }
-
-    /**
      * @param \DateTime $lastModifiedDttm
      * @return UserAccountModel
      */
     public function setLastModifiedDttm(\DateTime $lastModifiedDttm)
     {
         $this->userAccountEntity->lastModifiedDttm = $lastModifiedDttm;
-        $this->hasUnsavedChanges = true;
-        return $this;
-    }
-
-    /**
-     * @param $createdByUserAccount
-     * @return UserAccountModel
-     */
-    public function setCreatedByUserAccount($createdByUserAccount)
-    {
-        $this->userAccountEntity->createdByUserAccount = $createdByUserAccount;
         $this->hasUnsavedChanges = true;
         return $this;
     }
@@ -539,22 +554,9 @@ class UserAccountModel implements \JsonSerializable
     /**
      * @return bool
      */
-    public function isAuthenticate(){
-        return $this->isAuthenticated;
-    }
-
-    /**
-     * @param $emailAddress
-     * @return  UserAccountModel
-     */
-    private function setEmailAddress($emailAddress)
+    public function isAuthenticate()
     {
-        if (filter_var($emailAddress, FILTER_VALIDATE_EMAIL)) {
-            $this->userAccountEntity->emailAddress = $emailAddress;
-            $this->hasUnsavedChanges = true;
-        }
-        //@TODO Throw exception invalid email
-        return $this;
+        return $this->isAuthenticated;
     }
 
 }
